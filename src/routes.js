@@ -1,6 +1,7 @@
 import { Router } from "express";
 import prisma from "./database/prismaClient.js";
-import { register } from "./controllers/authController.js";
+import { register, login } from "./controllers/authController.js";
+// import { login } from "./controllers/authController.js";
 
 
 const routes = Router();
@@ -15,5 +16,6 @@ routes.get("/all-usuarios", async (req, res) => {
 });
 
 routes.post("/auth/create-user", register);
+routes.post("/auth/login", login);
 
 export default routes;
