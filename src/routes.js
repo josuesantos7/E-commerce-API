@@ -1,5 +1,6 @@
 import { Router } from "express";
 import prisma from "./database/prismaClient.js";
+import { register } from "./controllers/authController.js";
 
 
 const routes = Router();
@@ -8,16 +9,11 @@ routes.get("/", (req, res) => {
   return res.json({ message: "API de comércio rodando 🔥" });
 });
 
-routes.get("/create-user", async (req, res) => {
-  const user = await prisma.user.create({
-    data: {
-      name: "Teste1",
-      email: "teste1@email.com",
-      password: "123456"
-    }
-  });
-
-  return res.json(user);
+routes.get("/all-usuarios", async (req, res) => {
+  const users = await prisma.user.findMany();
+  return res.json(users);
 });
+
+routes.post("/auth/create-user", register);
 
 export default routes;
