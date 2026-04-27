@@ -2,10 +2,17 @@ import { Router } from "express";
 import prisma from "./database/prismaClient.js";
 import { register, login } from "./controllers/authController.js";
 import { authMiddleware } from "./middlewares/authMiddleware.js";
+import {
+  createProduct,
+  getProducts,
+  updateProduct,
+  deleteProduct
+} from "./controllers/productController.js";
 
 
 const routes = Router();
 
+// Rotas de Usuários
 routes.get("/", (req, res) => {
   return res.json({ message: "API de comércio rodando 🔥" });
 });
@@ -23,5 +30,11 @@ routes.get("/profile", authMiddleware, (req, res) => {
     userId: req.userId
   });
 });
+
+// Rotas de Produtos
+routes.post("/products", authMiddleware, createProduct);
+routes.get("/products", getProducts);
+routes.put("/products/:id", authMiddleware, updateProduct);
+routes.delete("/products/:id", authMiddleware, deleteProduct);
 
 export default routes;
