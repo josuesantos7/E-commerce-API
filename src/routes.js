@@ -8,6 +8,7 @@ import {
   updateProduct,
   deleteProduct
 } from "./controllers/productController.js";
+import { adminMiddleware } from "./middlewares/adminMiddleware.js";
 
 
 const routes = Router();
@@ -32,9 +33,9 @@ routes.get("/profile", authMiddleware, (req, res) => {
 });
 
 // Rotas de Produtos
-routes.post("/products", authMiddleware, createProduct);
+routes.post("/products", authMiddleware,adminMiddleware, createProduct);
 routes.get("/products", getProducts);
-routes.put("/products/:id", authMiddleware, updateProduct);
-routes.delete("/products/:id", authMiddleware, deleteProduct);
+routes.put("/products/:id", authMiddleware, adminMiddleware, updateProduct);
+routes.delete("/products/:id", authMiddleware, adminMiddleware, deleteProduct);
 
 export default routes;
