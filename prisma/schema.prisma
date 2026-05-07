@@ -30,3 +30,13 @@ model Product {
   stock       Int
   createdAt   DateTime @default(now())
 }
+
+model CartItem {
+  id        String  @id @default(uuid())
+  userId    String
+  productId String
+  quantity  Int
+
+  user      User    @relation(fields: [userId], references: [id])
+  product   Product @relation(fields: [productId], references: [id])
+}
