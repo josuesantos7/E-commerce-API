@@ -9,6 +9,11 @@ import {
   deleteProduct
 } from "./controllers/productController.js";
 import { adminMiddleware } from "./middlewares/adminMiddleware.js";
+import {
+  addToCart,
+  getCart,
+  removeFromCart
+} from "./controllers/cartController.js";
 
 
 const routes = Router();
@@ -37,5 +42,10 @@ routes.post("/products", authMiddleware,adminMiddleware, createProduct);
 routes.get("/products", getProducts);
 routes.put("/products/:id", authMiddleware, adminMiddleware, updateProduct);
 routes.delete("/products/:id", authMiddleware, adminMiddleware, deleteProduct);
+
+// Rotas de Carrinho
+routes.post("/cart", authMiddleware, addToCart);
+routes.get("/cart", authMiddleware, getCart);
+routes.delete("/cart/:id", authMiddleware, removeFromCart);
 
 export default routes;
