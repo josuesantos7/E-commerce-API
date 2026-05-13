@@ -20,6 +20,9 @@ model User {
   password  String
   role      String   @default("customer")
   createdAt DateTime @default(now())
+
+  orders    Order[]
+  cartItems CartItem[]
 }
 
 model Product {
@@ -29,6 +32,9 @@ model Product {
   price       Float
   stock       Int
   createdAt   DateTime @default(now())
+
+  cartItems  CartItem[]
+  orderItems OrderItem[]
 }
 
 model CartItem {
@@ -39,4 +45,26 @@ model CartItem {
 
   user      User    @relation(fields: [userId], references: [id])
   product   Product @relation(fields: [productId], references: [id])
+}
+
+model Order {
+  id        String      @id @default(uuid())
+  userId    String
+  total     Float
+  status    String      @default("pending")
+  createdAt DateTime    @default(now())
+
+  user       User        @relation(fields: [userId], references: [id])
+  orderItems OrderItem[]
+}
+
+model OrderItem {
+  id        String   @id @default(uuid())
+  orderId   String
+  productId String
+  quantity  Int
+  price     Float
+
+  order     Order    @relation(fields: [orderId], references: [id])
+  product   Product  @relation(fields: [productId], references: [id])
 }

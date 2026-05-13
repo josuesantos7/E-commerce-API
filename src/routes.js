@@ -14,6 +14,7 @@ import {
   getCart,
   removeFromCart
 } from "./controllers/cartController.js";
+import { createOrder } from "./controllers/orderController.js";
 
 
 const routes = Router();
@@ -47,5 +48,10 @@ routes.delete("/products/:id", authMiddleware, adminMiddleware, deleteProduct);
 routes.post("/cart", authMiddleware, addToCart);
 routes.get("/cart", authMiddleware, getCart);
 routes.delete("/cart/:id", authMiddleware, removeFromCart);
+
+// Rotas de Pedidos
+routes.post("/orders", authMiddleware, createOrder);
+
+
 
 export default routes;
