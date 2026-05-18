@@ -78,3 +78,76 @@ export const createOrder = async (req, res) => {
     });
   }
 };
+
+export const getOrders = async (req, res) => {
+  try {
+    const userId = req.userId;
+
+    const orders = await prisma.order.findMany({
+      where: { userId },
+      include: {
+        orderItems: {
+          include: {
+            product: true
+          }
+        }
+      }
+    });
+
+    return res.json(orders);
+
+  } catch (error) {
+    return res.status(500).json({
+      error: "Erro ao buscar pedidos"
+    });
+  }
+};
+
+export const getOrderById = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const order = await prisma.order.findUnique({
+      where: { id },
+      include: {
+        orderItems: {
+          include: {
+            product: true
+          }
+        }
+      }
+    });
+
+    if (!order) {
+      return res.status(404).json({
+        error: "Pedido não encontrado"
+      });
+    }
+
+    return res.json(order);
+
+  } catch (error) {
+    return res.status(500).json({
+      error: "Erro ao buscar pedido"
+    });
+  }
+};
+
+export const updateOrderStatus = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+
+    const order = await prisma.order.update({
+      where: { id },
+      data: { status }
+    });
+
+    return res.json(order);
+
+  } catch (error) {
+    return res.status(500).json({
+      error: "Erro ao atualizar status"
+    });
+  }
+};

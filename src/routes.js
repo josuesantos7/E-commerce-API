@@ -14,7 +14,12 @@ import {
   getCart,
   removeFromCart
 } from "./controllers/cartController.js";
-import { createOrder } from "./controllers/orderController.js";
+import { 
+  createOrder,
+  getOrders,
+  getOrderById,
+  updateOrderStatus
+ } from "./controllers/orderController.js";
 
 
 const routes = Router();
@@ -51,6 +56,14 @@ routes.delete("/cart/:id", authMiddleware, removeFromCart);
 
 // Rotas de Pedidos
 routes.post("/orders", authMiddleware, createOrder);
+routes.get("/orders", authMiddleware, getOrders);
+routes.get("/orders/:id", authMiddleware, getOrderById);
+routes.put(
+  "/orders/:id/status",
+  authMiddleware,
+  adminMiddleware,
+  updateOrderStatus
+);
 
 
 
