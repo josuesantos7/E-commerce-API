@@ -1,7 +1,7 @@
 import { createOrderService, getOrdersService, getOrderByIdService, updateOrderStatusService } from "../services/orderService.js";
 
 
-export const createOrder = async (req, res) => {
+export const createOrder = async (req, res, next) => {
   try {
     
     const order = await createOrderService(req, res);
@@ -12,15 +12,11 @@ export const createOrder = async (req, res) => {
     });
 
   } catch (error) {
-    console.log(error);
-
-    return res.status(500).json({
-      error: "Erro ao criar pedido"
-    });
+    next(error);
   }
 };
 
-export const getOrders = async (req, res) => {
+export const getOrders = async (req, res, next) => {
   try {
     const userId = req.userId;
 
@@ -28,13 +24,11 @@ export const getOrders = async (req, res) => {
 
     return res.json(orders);
   } catch (error) {
-    return res.status(500).json({
-      error: "Erro ao buscar pedidos"
-    });
+    next(error);
   }
 };
 
-export const getOrderById = async (req, res) => {
+export const getOrderById = async (req, res, next) => {
   try {
     const { id } = req.params;
 
@@ -42,23 +36,17 @@ export const getOrderById = async (req, res) => {
 
     return res.json(order);
   } catch (error) {
-    return res.status(500).json({
-      error: "Erro ao buscar pedido"
-    });
+    next(error);
   }
 }; 
 
-export const updateOrderStatus = async (req, res) => {
+export const updateOrderStatus = async (req, res, next) => {
   try {
-    // const { id } = req.params;
-    // const { status } = req.body;
+
     const order = await updateOrderStatusService(req, res);
 
     return res.json(order);
-
   } catch (error) {
-    return res.status(500).json({
-      error: "Erro ao atualizar status"
-    });
+    next(error);
   }
 };
