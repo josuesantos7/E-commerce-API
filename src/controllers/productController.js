@@ -1,37 +1,39 @@
 import { createProductService, getProductsService, updateProductService, deleteProductService } from "../services/productService.js";
 
 // criar novo produto.
-export const createProduct = async (req, res) => {
+export const createProduct = async (req, res, next) => {
   try {
     const product = await createProductService(req.body);
     
     return res.status(201).json(product);
   } catch (error) {
-    // console.log(error);
-    return res.status(500).json({ error: "Erro ao criar produto" });
+    next(error);
   }
 };
 
 // listar todos os produtos.
-export const getProducts = async (req, res) => {
-  const products = await getProductsService();
-  return res.status(200).json(products);
+export const getProducts = async (req, res, next) => {
+  try {
+    const products = await getProductsService();
+    return res.status(200).json(products);
+  } catch (error) {
+    next(error);
+  }
 };
 
 // atualizar produto.
-export const updateProduct = async (req, res) => {
+export const updateProduct = async (req, res, next) => {
   try {
     const { id } = req.params;
     const product = await updateProductService(id, req.body);
     return res.json(product);
   } catch (error) {
-    console.log(error);
-    return res.status(500).json({ error: "Erro ao atualizar produto" });
+    next(error);
   }
 };
 
 // deletar produto.
-export const deleteProduct = async (req, res) => {
+export const deleteProduct = async (req, res, next) => {
   try {
     const { id } = req.params;
 
@@ -39,7 +41,6 @@ export const deleteProduct = async (req, res) => {
 
     return res.json({ message: "Produto deletado com sucesso." });
   } catch (error) {
-    console.log(error);
-    return res.status(500).json({ error: "Erro ao deletar produto" });
+    next(error);
   }
 };

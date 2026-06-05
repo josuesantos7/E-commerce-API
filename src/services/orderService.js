@@ -1,4 +1,5 @@
 import prisma from "../database/prismaClient.js";
+import { AppError } from "../errors/AppError.js";
 
 export const createOrderService = async (req, res) => {
     
@@ -11,16 +12,14 @@ export const createOrderService = async (req, res) => {
     });
 
     if (cartItems.length === 0) {
-    return res.status(400).json({
-        error: "Carrinho vazio"
-    });
+      throw new AppError("Carrinho vazio", 404);
     }
 
     for (const item of cartItems) {
 
       // validar estoque
       if (item.quantity > item.product.stock) {
-          return new Error(`Estoque insuficiente para ${item.product.name}`);
+        throw new AppError(`Estoque insuficiente para ${item.product.name}`, 422);
       }
     }
 
@@ -101,9 +100,7 @@ export const getOrderByIdService = async (req, res) => {
     });
 
     if (!order) {
-      return res.status(404).json({
-        error: "Pedido não encontrado"
-      });
+      throw new AppError("Pedido não encontrado", 404);
     }
 
     return order;
@@ -118,5 +115,8 @@ export const updateOrderStatusService = async (req, res) => {
       data: { status }
     });
 
+    if (!id || !status) {
+      throw new AppError("ID do pedido ou status não encontrados", 404);
+    }
     return order;
 };

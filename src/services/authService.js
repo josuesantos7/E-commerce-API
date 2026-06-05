@@ -8,7 +8,7 @@ export const registerService = async (req, res) => {
     const { name, email, password } = req.body;
 
     if (!name || !email || !password) {
-      throw new Error("Preencha todos os campos");
+      throw new AppError("Preencha todos os campos", 400);
     }
 
     const userExists = await prisma.user.findUnique({
@@ -16,7 +16,7 @@ export const registerService = async (req, res) => {
     });
 
     if (userExists) {
-      throw new Error("Usuário já existe");
+      throw new AppError("Usuário já existe", 409);
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -37,7 +37,7 @@ export const loginService = async (req, res) => {
     const { email, password } = req.body;
 
     if (!email || !password) {
-      throw new Error("Email e senha são obrigatórios");
+      throw new AppError("Email e senha são obrigatórios", 400);
     }
 
     const user = await prisma.user.findUnique({
@@ -45,13 +45,13 @@ export const loginService = async (req, res) => {
     });
 
     if (!user) {
-      throw new Error("Usuário não encontrado");
+      throw new AppError("Usuário não encontrado", 404);
     }
 
     const passwordMatch = await bcrypt.compare(password, user.password);
 
     if (!passwordMatch) {
-      throw new Error("Senha inválida");
+      throw new AppError("Senha inválida", 401);
     }
 
     // gerar token
