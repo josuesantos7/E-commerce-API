@@ -10,7 +10,11 @@ export const addToCartService = async (req, res) => {
     });
 
     if (!product) {
-    return res.status(404).json({ error: "Produto não encontrado" });
+        throw new AppError("Produto não encontrado", 404);
+    }
+
+    if (quantity <= 0 ) {
+        throw new AppError("Quantidade inválida", 400);
     }
 
     // verifica se já existe no carrinho
