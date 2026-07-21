@@ -19,7 +19,9 @@ import {
   getOrders,
   getOrderById,
   updateOrderStatus
- } from "./controllers/orderController.js";
+} from "./controllers/orderController.js";
+import { validate } from "./middlewares/validate.js";
+import { createProductSchema } from "./schemas/productSchema.js";
 
 
 const routes = Router();
@@ -44,7 +46,7 @@ routes.get("/profile", authMiddleware, (req, res) => {
 });
 
 // Rotas de Produtos
-routes.post("/products", authMiddleware,adminMiddleware, createProduct);
+routes.post("/products", authMiddleware,adminMiddleware,validate(createProductSchema), createProduct);
 routes.get("/products", getProducts);
 routes.put("/products/:id", authMiddleware, adminMiddleware, updateProduct);
 routes.delete("/products/:id", authMiddleware, adminMiddleware, deleteProduct);
