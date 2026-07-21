@@ -22,6 +22,7 @@ import {
 } from "./controllers/orderController.js";
 import { validate } from "./middlewares/validate.js";
 import { createProductSchema } from "./schemas/productSchema.js";
+import { registerSchema, loginSchema } from "./schemas/authSchema.js";
 
 
 const routes = Router();
@@ -36,8 +37,8 @@ routes.get("/all-usuarios", async (req, res) => {
   return res.json(users);
 });
 
-routes.post("/auth/create-user", register);
-routes.post("/auth/login", login);
+routes.post("/auth/create-user", validate(registerSchema), register);
+routes.post("/auth/login", validate(loginSchema), login);
 routes.get("/profile", authMiddleware, (req, res) => {
   return res.json({
     message: "Acesso autorizado!",
