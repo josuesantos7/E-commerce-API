@@ -23,6 +23,7 @@ import {
 import { validate } from "./middlewares/validate.js";
 import { createProductSchema } from "./schemas/productSchema.js";
 import { registerSchema, loginSchema } from "./schemas/authSchema.js";
+import { addToCartSchema } from "./schemas/cartSchema.js";
 
 
 const routes = Router();
@@ -53,7 +54,7 @@ routes.put("/products/:id", authMiddleware, adminMiddleware, updateProduct);
 routes.delete("/products/:id", authMiddleware, adminMiddleware, deleteProduct);
 
 // Rotas de Carrinho
-routes.post("/cart", authMiddleware, addToCart);
+routes.post("/cart", authMiddleware, validate(addToCartSchema), addToCart);
 routes.get("/cart", authMiddleware, getCart);
 routes.delete("/cart/:id", authMiddleware, removeFromCart);
 
