@@ -2,14 +2,11 @@ import prisma from "../database/prismaClient.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
+import { AppError } from "../errors/AppError.js";
 
 
 export const registerService = async (req, res) => {
     const { name, email, password } = req.body;
-
-    if (!name || !email || !password) {
-      throw new AppError("Preencha todos os campos", 400);
-    }
 
     const userExists = await prisma.user.findUnique({
       where: { email }
@@ -36,22 +33,18 @@ export const registerService = async (req, res) => {
 export const loginService = async (req, res) => {
     const { email, password } = req.body;
 
-    if (!email || !password) {
-      throw new AppError("Email e senha são obrigatórios", 400);
-    }
-
     const user = await prisma.user.findUnique({
       where: { email }
     });
 
     if (!user) {
-      throw new AppError("Usuário não encontrado", 404);
+      throw new AppError("Usuário ou senha inválidos", 401);
     }
 
     const passwordMatch = await bcrypt.compare(password, user.password);
 
     if (!passwordMatch) {
-      throw new AppError("Senha inválida", 401);
+      throw new AppError("Usuário ou senha inválidos", 401);
     }
 
     // gerar token

@@ -19,7 +19,12 @@ import {
   getOrders,
   getOrderById,
   updateOrderStatus
- } from "./controllers/orderController.js";
+} from "./controllers/orderController.js";
+import { validate } from "./middlewares/validate.js";
+import { createProductSchema } from "./schemas/productSchema.js";
+import { registerSchema, loginSchema } from "./schemas/authSchema.js";
+import { addToCartSchema } from "./schemas/cartSchema.js";
+import { updateOrderStatusSchema } from "./schemas/orderSchema.js";
 
 
 const routes = Router();
@@ -34,8 +39,8 @@ routes.get("/all-usuarios", async (req, res) => {
   return res.json(users);
 });
 
-routes.post("/auth/create-user", register);
-routes.post("/auth/login", login);
+routes.post("/auth/create-user", validate(registerSchema), register);
+routes.post("/auth/login", validate(loginSchema), login);
 routes.get("/profile", authMiddleware, (req, res) => {
   return res.json({
     message: "Acesso autorizado!",
@@ -44,13 +49,13 @@ routes.get("/profile", authMiddleware, (req, res) => {
 });
 
 // Rotas de Produtos
-routes.post("/products", authMiddleware,adminMiddleware, createProduct);
+routes.post("/products", authMiddleware,adminMiddleware,validate(createProductSchema), createProduct);
 routes.get("/products", getProducts);
 routes.put("/products/:id", authMiddleware, adminMiddleware, updateProduct);
 routes.delete("/products/:id", authMiddleware, adminMiddleware, deleteProduct);
 
 // Rotas de Carrinho
-routes.post("/cart", authMiddleware, addToCart);
+routes.post("/cart", authMiddleware, validate(addToCartSchema), addToCart);
 routes.get("/cart", authMiddleware, getCart);
 routes.delete("/cart/:id", authMiddleware, removeFromCart);
 
@@ -62,6 +67,7 @@ routes.put(
   "/orders/:id/status",
   authMiddleware,
   adminMiddleware,
+  validate(updateOrderStatusSchema),
   updateOrderStatus
 );
 
