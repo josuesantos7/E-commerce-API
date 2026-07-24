@@ -24,6 +24,7 @@ import { validate } from "./middlewares/validate.js";
 import { createProductSchema } from "./schemas/productSchema.js";
 import { registerSchema, loginSchema } from "./schemas/authSchema.js";
 import { addToCartSchema } from "./schemas/cartSchema.js";
+import { updateOrderStatusSchema } from "./schemas/orderSchema.js";
 
 
 const routes = Router();
@@ -66,6 +67,7 @@ routes.put(
   "/orders/:id/status",
   authMiddleware,
   adminMiddleware,
+  validate(updateOrderStatusSchema),
   updateOrderStatus
 );
 
