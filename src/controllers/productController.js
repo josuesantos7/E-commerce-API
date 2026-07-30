@@ -14,11 +14,12 @@ export const createProduct = async (req, res, next) => {
 // listar todos os produtos.
 export const getProducts = async (req, res, next) => {
   try {
-    const { page, limit } = req.query;
+    const { page, limit, search } = req.query;
 
     const products = await getProductsService(
       page,
-      limit
+      limit,
+      search
     );
     
     return res.status(200).json(products);

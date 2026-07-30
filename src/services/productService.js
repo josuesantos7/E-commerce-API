@@ -13,7 +13,8 @@ export const createProductService = async ({
 
 export const getProductsService = async (
     page = 1,
-    limit = 10
+    limit = 10,
+    search = ""
 ) => {
     page = Number(page);
     limit = Number(limit);
@@ -30,7 +31,26 @@ export const getProductsService = async (
 
     const skip = (page - 1) * limit;
 
+    const where = {};
+    if (search) {
+        where.OR = [
+        {
+            name: {
+                contains: search,
+                mode: "insensitive"
+            }
+        },
+        {
+            description: {
+                contains: search,
+                mode: "insensitive"
+            }
+        }
+    ];
+    }
+
     const products = await prisma.product.findMany({
+        where,
         skip,
         take: limit,
         orderBy: {
