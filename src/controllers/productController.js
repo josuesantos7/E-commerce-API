@@ -14,7 +14,13 @@ export const createProduct = async (req, res, next) => {
 // listar todos os produtos.
 export const getProducts = async (req, res, next) => {
   try {
-    const products = await getProductsService();
+    const { page, limit } = req.query;
+
+    const products = await getProductsService(
+      page,
+      limit
+    );
+    
     return res.status(200).json(products);
   } catch (error) {
     next(error);
