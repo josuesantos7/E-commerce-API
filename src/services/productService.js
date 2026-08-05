@@ -14,10 +14,14 @@ export const createProductService = async ({
 export const getProductsService = async (
     page = 1,
     limit = 10,
-    search = ""
+    search = "",
+    minPrice,
+    maxPrice
 ) => {
     page = Number(page);
     limit = Number(limit);
+    const min = Number(minPrice);
+    const max = Number(maxPrice);
 
     if (page < 1 || isNaN(page)) {
     page = 1;
@@ -47,6 +51,19 @@ export const getProductsService = async (
             }
         }
     ];
+    }
+
+    if (minPrice != null) {
+        where.price = {
+            gte: min
+        };
+    }
+
+    if (maxPrice) {
+        where.price = {
+            ...(where.price || {}),
+            lte: max
+        };
     }
 
     const products = await prisma.product.findMany({
