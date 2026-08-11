@@ -26,8 +26,6 @@ export const getProductsService = async (
 
     page = Number(page);
     limit = Number(limit);
-    const min = Number(minPrice);
-    const max = Number(maxPrice);
 
     if (page < 1 || isNaN(page)) {
     page = 1;
@@ -61,14 +59,14 @@ export const getProductsService = async (
 
     if (minPrice != null) {
         where.price = {
-            gte: min
+            gte: minPrice
         };
     }
 
     if (maxPrice != null) {
         where.price = {
             ...(where.price || {}),
-            lte: max
+            lte: maxPrice
         };
     }
 

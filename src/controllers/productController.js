@@ -14,7 +14,7 @@ export const createProduct = async (req, res, next) => {
 // listar todos os produtos.
 export const getProducts = async (req, res, next) => {
   try {
-    const { page, limit, search, minPrice, maxPrice, sort, order } = req.query;
+    const { page, limit, search, minPrice, maxPrice, sort, order } = req.validated.query;
 
     const products = await getProductsService(
       page,

@@ -25,6 +25,7 @@ import { createProductSchema } from "./schemas/productSchema.js";
 import { registerSchema, loginSchema } from "./schemas/authSchema.js";
 import { addToCartSchema } from "./schemas/cartSchema.js";
 import { updateOrderStatusSchema } from "./schemas/orderSchema.js";
+import { getProductsSchema } from "./schemas/getProductsSchema.js";
 
 
 const routes = Router();
@@ -50,7 +51,7 @@ routes.get("/profile", authMiddleware, (req, res) => {
 
 // Rotas de Produtos
 routes.post("/products", authMiddleware,adminMiddleware,validate(createProductSchema), createProduct);
-routes.get("/products", getProducts);
+routes.get("/products", validate(getProductsSchema, "query"), getProducts);
 routes.put("/products/:id", authMiddleware, adminMiddleware, updateProduct);
 routes.delete("/products/:id", authMiddleware, adminMiddleware, deleteProduct);
 
