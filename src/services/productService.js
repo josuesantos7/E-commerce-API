@@ -16,12 +16,16 @@ export const getProductsService = async (
     limit = 10,
     search = "",
     minPrice,
-    maxPrice
+    maxPrice,
+    sort,
+    order
 ) => {
+    let orderBy = {
+    createdAt: "desc"
+    };
+
     page = Number(page);
     limit = Number(limit);
-    const min = Number(minPrice);
-    const max = Number(maxPrice);
 
     if (page < 1 || isNaN(page)) {
     page = 1;
@@ -55,27 +59,49 @@ export const getProductsService = async (
 
     if (minPrice != null) {
         where.price = {
-            gte: min
+            gte: minPrice
         };
     }
 
-    if (maxPrice) {
+    if (maxPrice != null) {
         where.price = {
             ...(where.price || {}),
-            lte: max
+            lte: maxPrice
         };
+    }
+
+    // Ordenação dinamica.
+    const allowedSortFields = [
+    "name",
+    "price",
+    "createdAt"
+    ];
+
+    const allowedOrders = [
+    "asc",
+    "desc"
+    ];
+
+    if (
+    sort &&
+    allowedSortFields.includes(sort) &&
+    allowedOrders.includes(order)
+    ) {
+        orderBy = {
+            [sort] : order
+        }
     }
 
     const products = await prisma.product.findMany({
         where,
         skip,
         take: limit,
-        orderBy: {
-        createdAt: "desc"
-        }
+        orderBy
     });
 
-    const total = await prisma.product.count();
+    const total = await prisma.product.count({
+        where
+    });
 
     const totalPages = Math.ceil(total / limit);
 
