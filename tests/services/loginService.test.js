@@ -146,7 +146,44 @@ describe("loginService", () => {
 
     });
 
+    it("deve gerar o token com id, role e expiração corretos", async () => {
+
+        const user = {
+            id: "user-123",
+            name: "Josué",
+            email: "josue@email.com",
+            password: "hash-da-senha",
+            role: "USER"
+        };
+
+        prisma.user.findUnique.mockResolvedValue(user);
+
+        bcrypt.compare.mockResolvedValue(true);
+
+        jwt.sign.mockReturnValue("token-falso-123");
+
+        const req = {
+            body: {
+                email: "josue@email.com",
+                password: "123456"
+            }
+        };
+
+        await loginService(req);
+
+        expect(jwt.sign).toHaveBeenCalledWith(
+            {
+                id: user.id,
+                role: user.role
+            },
+            process.env.JWT_SECRET,
+            {
+                expiresIn: "2h"
+            }
+        );
+    });
 
 
+    
 });
 
