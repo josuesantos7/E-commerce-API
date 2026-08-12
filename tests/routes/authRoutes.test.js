@@ -73,4 +73,52 @@ describe("POST /auth/login", () => {
 
     });
 
+    it("deve retornar 400 quando o email não for informado", async () => {
+
+        const response = await request(app)
+            .post("/auth/login")
+            .send({
+                password: "123456"
+            });
+
+        expect(response.status).toBe(400);
+
+    });
+
+    it("deve retornar 400 quando a senha não for informada", async () => {
+
+        const response = await request(app)
+            .post("/auth/login")
+            .send({
+                email: "josue@email.com"
+            });
+
+        expect(response.status).toBe(400);
+    });
+
+    it("deve retornar 400 quando o email for inválido", async () => {
+
+        const response = await request(app)
+            .post("/auth/login")
+            .send({
+                email: "email-invalido",
+                password: "123456"
+            });
+
+        expect(response.status).toBe(400);
+    });
+
+    it("deve retornar 400 quando a senha tiver menos de 6 caracteres", async () => {
+
+        const response = await request(app)
+            .post("/auth/login")
+            .send({
+                email: "josue@email.com",
+                password: "123"
+            });
+        expect(response.status).toBe(400);
+
+    });
+
+
 });
