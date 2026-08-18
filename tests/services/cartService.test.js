@@ -171,3 +171,62 @@ describe("addToCartService", () => {
         ).rejects.toThrow("Quantidade inválida");
     });
 });
+
+describe("getCartService", () => {
+    it("deve retornar os itens do carrinho do usuário", async () => {
+
+        const cart = [
+            {
+                id: "cart-item-1",
+                userId: "user-1",
+                productId: "product-1",
+                quantity: 2,
+                product: {
+                    id: "product-1",
+                    name: "Produto Teste",
+                    price: 250
+                }
+            }
+        ];
+
+        prisma.cartItem.findMany.mockResolvedValue(cart);
+
+        const req = {
+            userId: "user-1"
+        };
+
+        const result = await getCartService(req);
+
+        expect(result).toEqual(cart);
+
+        expect(prisma.cartItem.findMany).toHaveBeenCalledWith({
+            where: {
+                userId: "user-1"
+            },
+            include: {
+                product: true
+            }
+        });
+    });
+});
+
+describe("removeFromCartService", () => {
+    it("deve remover um item do carrinho", async () => {
+
+        prisma.cartItem.delete.mockResolvedValue({});
+
+        const req = {
+            params: {
+                id: "cart-item-1"
+            }
+        };
+
+        await removeFromCartService(req);
+
+        expect(prisma.cartItem.delete).toHaveBeenCalledWith({
+            where: {
+                id: "cart-item-1"
+            }
+        });
+    });
+});
