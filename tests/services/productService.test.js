@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
 import prisma from "../../src/database/prismaClient.js";
-import { getProductsService, createProductService } from "../../src/services/productService.js";
+import { getProductsService, createProductService, updateProductService, deleteProductService } from "../../src/services/productService.js";
 
 
 vi.mock("../../src/database/prismaClient.js", () => ({
@@ -8,7 +8,9 @@ vi.mock("../../src/database/prismaClient.js", () => ({
         product: {
             create: vi.fn(),
             findMany: vi.fn(),
-            count: vi.fn()
+            count: vi.fn(),
+            update: vi.fn(),
+            delete: vi.fn()
         }
     }
 }));
@@ -599,6 +601,54 @@ describe("createProductService", () => {
 
         expect(prisma.product.create).toHaveBeenCalledWith({
             data: productData
+        });
+    });
+});
+
+describe("updateProductService", () => {
+    it("deve atualizar um produto corretamente", async () => {
+
+        const productData = {
+            name: "Polimento Premium",
+            description: "Polimento automotivo completo",
+            price: 350,
+            stock: 8
+        };
+
+        const updatedProduct = {
+            id: "product-1",
+            ...productData
+        };
+
+        prisma.product.update.mockResolvedValue(updatedProduct);
+
+        const result = await updateProductService(
+            "product-1",
+            productData
+        );
+
+        expect(result).toEqual(updatedProduct);
+
+        expect(prisma.product.update).toHaveBeenCalledWith({
+            where: {
+                id: "product-1"
+            },
+            data: productData
+        });
+    });
+});
+
+describe("deleteProductService", () => {
+    it("deve excluir um produto corretamente", async () => {
+
+        prisma.product.delete.mockResolvedValue({});
+
+        await deleteProductService("product-1");
+
+        expect(prisma.product.delete).toHaveBeenCalledWith({
+            where: {
+                id: "product-1"
+            }
         });
     });
 });
