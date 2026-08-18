@@ -411,6 +411,169 @@ describe("getProductsService", () => {
         });
 
     });
+
+    it("deve utilizar a primeira página quando page for menor que 1", async () => {
+
+        const products = [
+            {
+                id: "product-1",
+                name: "Produto Teste",
+                description: "Descrição",
+                price: 250,
+                stock: 10
+            }
+        ];
+
+        prisma.product.findMany.mockResolvedValue(products);
+        prisma.product.count.mockResolvedValue(1);
+
+        const result = await getProductsService(
+            0,
+            10
+        );
+
+        expect(result.page).toBe(1);
+
+        expect(prisma.product.findMany).toHaveBeenCalledWith({
+            where: {},
+            skip: 0,
+            take: 10,
+            orderBy: {
+                createdAt: "desc"
+            }
+        });
+
+    });
+
+    it("deve utilizar a primeira página quando page não for um número", async () => {
+
+        const products = [
+            {
+                id: "product-1",
+                name: "Produto Teste",
+                description: "Descrição",
+                price: 250,
+                stock: 10
+            }
+        ];
+
+        prisma.product.findMany.mockResolvedValue(products);
+        prisma.product.count.mockResolvedValue(1);
+
+        const result = await getProductsService(
+            "abc",
+            10
+        );
+
+        expect(result.page).toBe(1);
+
+        expect(prisma.product.findMany).toHaveBeenCalledWith({
+            where: {},
+            skip: 0,
+            take: 10,
+            orderBy: {
+                createdAt: "desc"
+            }
+        });
+
+    });
+
+    it("deve utilizar o limite padrão quando limit for menor que 1", async () => {
+
+        const products = [
+            {
+                id: "product-1",
+                name: "Produto Teste",
+                description: "Descrição",
+                price: 250,
+                stock: 10
+            }
+        ];
+
+        prisma.product.findMany.mockResolvedValue(products);
+        prisma.product.count.mockResolvedValue(1);
+
+        const result = await getProductsService(
+            1,
+            0
+        );
+
+        expect(result.limit).toBe(10);
+
+        expect(prisma.product.findMany).toHaveBeenCalledWith({
+            where: {},
+            skip: 0,
+            take: 10,
+            orderBy: {
+                createdAt: "desc"
+            }
+        });
+
+    });
+
+    it("deve utilizar o limite padrão quando limit não for um número", async () => {
+
+        const products = [
+            {
+                id: "product-1",
+                name: "Produto Teste",
+                description: "Descrição",
+                price: 250,
+                stock: 10
+            }
+        ];
+
+        prisma.product.findMany.mockResolvedValue(products);
+        prisma.product.count.mockResolvedValue(1);
+
+        const result = await getProductsService(
+            1,
+            "abc"
+        );
+
+        expect(result.limit).toBe(10);
+
+        expect(prisma.product.findMany).toHaveBeenCalledWith({
+            where: {},
+            skip: 0,
+            take: 10,
+            orderBy: {
+                createdAt: "desc"
+            }
+        });
+
+    });
+
+    it("deve limitar o máximo de produtos por página a 100", async () => {
+        const products = [
+            {
+                id: "product-1",
+                name: "Produto Teste",
+                description: "Descrição",
+                price: 250,
+                stock: 10
+            }
+        ];
+
+        prisma.product.findMany.mockResolvedValue(products);
+        prisma.product.count.mockResolvedValue(1);
+
+        const result = await getProductsService(
+            1,
+            150
+        );
+
+        expect(result.limit).toBe(100);
+
+        expect(prisma.product.findMany).toHaveBeenCalledWith({
+            where: {},
+            skip: 0,
+            take: 100,
+            orderBy: {
+                createdAt: "desc"
+            }
+        });
+    });
 });
 
 describe("createProductService", () => {
