@@ -1,11 +1,12 @@
 import { describe, it, expect, vi } from "vitest";
 import prisma from "../../src/database/prismaClient.js";
-import { getProductsService } from "../../src/services/productService.js";
+import { getProductsService, createProductService } from "../../src/services/productService.js";
 
 
 vi.mock("../../src/database/prismaClient.js", () => ({
     default: {
         product: {
+            create: vi.fn(),
             findMany: vi.fn(),
             count: vi.fn()
         }
@@ -410,5 +411,31 @@ describe("getProductsService", () => {
         });
 
     });
+});
 
+describe("createProductService", () => {
+    it("deve criar um produto corretamente", async () => {
+
+        const productData = {
+            name: "Polimento Premium",
+            description: "Polimento automotivo completo",
+            price: 300,
+            stock: 10
+        };
+
+        const createdProduct = {
+            id: "product-1",
+            ...productData
+        };
+
+        prisma.product.create.mockResolvedValue(createdProduct);
+
+        const result = await createProductService(productData);
+
+        expect(result).toEqual(createdProduct);
+
+        expect(prisma.product.create).toHaveBeenCalledWith({
+            data: productData
+        });
+    });
 });
