@@ -1,6 +1,6 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import prisma from "../../src/database/prismaClient.js";
-import { loginService } from "../../src/services/authService.js";
+import { loginService, registerService } from "../../src/services/authService.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 
@@ -8,14 +8,16 @@ import jwt from "jsonwebtoken";
 vi.mock("../../src/database/prismaClient.js", () => ({
     default: {
         user: {
-            findUnique: vi.fn()
+            findUnique: vi.fn(),
+            create: vi.fn()
         }
     }
 }));
 
 vi.mock("bcrypt", () => ({
     default: {
-        compare: vi.fn()
+        compare: vi.fn(),
+        hash: vi.fn()
     }
 }));
 
@@ -29,6 +31,82 @@ vi.mock("jsonwebtoken", async () => {
             sign: vi.fn()
         }
     };
+});
+
+describe("registerService", () => {
+    
+    beforeEach(() => {
+        vi.clearAllMocks();
+    });
+
+    it("deve registrar um usuário corretamente", async () => {
+
+        const user = {
+            id: "user-1",
+            name: "João",
+            email: "joao@email.com",
+            password: "senha-hash",
+            role: "USER"
+        };
+
+        prisma.user.findUnique.mockResolvedValue(null);
+
+        bcrypt.hash.mockResolvedValue("senha-hash");
+
+        prisma.user.create.mockResolvedValue(user);
+
+        const req = {
+            body: {
+                name: "João",
+                email: "joao@email.com",
+                password: "123456"
+            }
+        };
+
+        const result = await registerService(req);
+
+        expect(result).toEqual({
+            id: "user-1",
+            name: "João",
+            email: "joao@email.com",
+            role: "USER"
+        });
+
+        expect(bcrypt.hash).toHaveBeenCalledWith("123456", 10);
+
+        expect(prisma.user.create).toHaveBeenCalledWith({
+            data: {
+                name: "João",
+                email: "joao@email.com",
+                password: "senha-hash"
+            }
+        });
+    });
+
+    it("deve lançar erro quando o usuário já existir", async () => {
+
+        prisma.user.findUnique.mockResolvedValue({
+            id: "user-1",
+            name: "João",
+            email: "joao@email.com"
+        });
+
+        const req = {
+            body: {
+                name: "João",
+                email: "joao@email.com",
+                password: "123456"
+            }
+        };
+
+        await expect(
+            registerService(req)
+        ).rejects.toThrow("Usuário já existe");
+
+        expect(prisma.user.create).not.toHaveBeenCalled();
+
+        expect(bcrypt.hash).not.toHaveBeenCalled();
+    });
 });
 
 describe("loginService", () => {
@@ -181,9 +259,6 @@ describe("loginService", () => {
                 expiresIn: "2h"
             }
         );
-    });
-
-
-    
+    }); 
 });
 
