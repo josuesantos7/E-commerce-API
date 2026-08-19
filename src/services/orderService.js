@@ -110,13 +110,14 @@ export const updateOrderStatusService = async (req, res) => {
     const { id } = req.params;
     const { status } = req.body;
 
+    if (!id || !status) {
+      throw new AppError("ID do pedido ou status não encontrados", 404);
+    }
+
     const order = await prisma.order.update({
       where: { id },
       data: { status }
     });
 
-    if (!id || !status) {
-      throw new AppError("ID do pedido ou status não encontrados", 404);
-    }
     return order;
 };
