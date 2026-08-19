@@ -256,3 +256,67 @@ describe("createOrderService", () => {
         });
     });
 });
+
+describe("getOrdersService", () => {
+    it("deve retornar os pedidos do usuário", async () => {
+
+        const orders = [
+            {
+                id: "order-1",
+                userId: "user-1",
+                total: 250,
+                orderItems: [
+                    {
+                        id: "order-item-1",
+                        productId: "product-1",
+                        quantity: 2,
+                        price: 100,
+                        product: {
+                            id: "product-1",
+                            name: "Produto 1",
+                            price: 100
+                        }
+                    }
+                ]
+            }
+        ];
+
+        prisma.order.findMany.mockResolvedValue(orders);
+
+        const req = {
+            userId: "user-1"
+        };
+
+        const result = await getOrdersService(req);
+
+        expect(result).toEqual(orders);
+
+        expect(prisma.order.findMany).toHaveBeenCalledWith({
+            where: {
+                userId: "user-1"
+            },
+            include: {
+                orderItems: {
+                    include: {
+                        product: true
+                    }
+                }
+            }
+        });
+    });
+
+    it("deve lançar erro quando o pedido não for encontrado", async () => {
+
+        prisma.order.findUnique.mockResolvedValue(null);
+
+        const req = {
+            params: {
+                id: "order-inexistente"
+            }
+        };
+
+        await expect(
+            getOrderByIdService(req)
+        ).rejects.toThrow("Pedido não encontrado");
+    });
+});
