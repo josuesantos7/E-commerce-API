@@ -1,9 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import request from "supertest";
+import jwt from "jsonwebtoken";
 
 import app from "../../src/app.js";
 
-import { getProductsService } from "../../src/services/productService.js";
+import { getProductsService, createProductService } from "../../src/services/productService.js";
 
 vi.mock("../../src/services/productService.js", () => ({
     createProductService: vi.fn(),
@@ -11,6 +12,18 @@ vi.mock("../../src/services/productService.js", () => ({
     updateProductService: vi.fn(),
     deleteProductService: vi.fn()
 }));
+
+vi.mock("jsonwebtoken", async () => {
+    const actual = await vi.importActual("jsonwebtoken");
+
+    return {
+        ...actual,
+        default: {
+            ...actual.default,
+            verify: vi.fn()
+        }
+    };
+});
 
 beforeEach(() => {
     vi.clearAllMocks();
@@ -221,5 +234,212 @@ describe("GET /products", () => {
         expect(response.status).toBe(400);
 
         expect(getProductsService).not.toHaveBeenCalled();
+    });
+});
+
+// Rota para Criar Produtos.
+describe("POST /products", () => {
+
+    it("deve criar produto quando o usuário for admin", async () => {
+
+        jwt.verify.mockReturnValue({
+            id: "user-123",
+            role: "admin"
+        });
+
+        const product = {
+            id: "product-123",
+            name: "Notebook",
+            description: "Notebook de teste",
+            price: 3500,
+            stock: 10
+        };
+
+        createProductService.mockResolvedValue(product);
+
+        const response = await request(app)
+            .post("/products")
+            .set("Authorization", "Bearer token-falso")
+            .send({
+                name: "Notebook",
+                description: "Notebook de teste",
+                price: 3500,
+                stock: 10
+            });
+
+        expect(response.status).toBe(201);
+
+        expect(response.body).toEqual(product);
+
+        expect(createProductService).toHaveBeenCalledWith({
+            name: "Notebook",
+            description: "Notebook de teste",
+            price: 3500,
+            stock: 10
+        });
+
+    });
+
+    it("deve retornar 401 quando o token não for informado", async () => {
+
+        const response = await request(app)
+            .post("/products")
+            .send({
+                name: "Notebook",
+                description: "Notebook de teste",
+                price: 3500,
+                stock: 10
+            });
+
+        expect(response.status).toBe(401);
+
+        expect(response.body).toEqual({
+            error: "Token não informado"
+        });
+
+        expect(createProductService).not.toHaveBeenCalled();
+    });
+
+    it("deve retornar 403 quando o usuário não for admin", async () => {
+
+        jwt.verify.mockReturnValue({
+            id: "user-123",
+            role: "USER"
+        });
+
+        const response = await request(app)
+            .post("/products")
+            .set("Authorization", "Bearer token-falso")
+            .send({
+                name: "Notebook",
+                description: "Notebook de teste",
+                price: 3500,
+                stock: 10
+            });
+
+        expect(response.status).toBe(403);
+
+        expect(response.body).toEqual({
+            error: "Acesso negado"
+        });
+
+        expect(createProductService).not.toHaveBeenCalled();
+    });
+
+    it("deve retornar 400 quando o nome não for informado", async () => {
+
+        jwt.verify.mockReturnValue({
+            id: "user-123",
+            role: "admin"
+        });
+
+        const response = await request(app)
+            .post("/products")
+            .set("Authorization", "Bearer token-falso")
+            .send({
+                description: "Notebook de teste",
+                price: 3500,
+                stock: 10
+            });
+
+        expect(response.status).toBe(400);
+
+        expect(createProductService).not.toHaveBeenCalled();
+    });
+
+    it("deve retornar 400 quando o preço for negativo", async () => {
+
+        jwt.verify.mockReturnValue({
+            id: "user-123",
+            role: "admin"
+        });
+
+        const response = await request(app)
+            .post("/products")
+            .set("Authorization", "Bearer token-falso")
+            .send({
+                name: "Notebook",
+                description: "Notebook de teste",
+                price: -100,
+                stock: 10
+            });
+
+        expect(response.status).toBe(400);
+
+        expect(createProductService).not.toHaveBeenCalled();
+    });
+
+    it("deve retornar 400 quando o estoque for negativo", async () => {
+
+        jwt.verify.mockReturnValue({
+            id: "user-123",
+            role: "admin"
+        });
+
+        const response = await request(app)
+            .post("/products")
+            .set("Authorization", "Bearer token-falso")
+            .send({
+                name: "Notebook",
+                description: "Notebook de teste",
+                price: 3500,
+                stock: -1
+            });
+
+        expect(response.status).toBe(400);
+
+        expect(createProductService).not.toHaveBeenCalled();
+    });
+
+    it("deve retornar 401 quando o token for inválido", async () => {
+
+        jwt.verify.mockImplementation(() => {
+            throw new Error("Token inválido");
+        });
+
+        const response = await request(app)
+            .post("/products")
+            .set("Authorization", "Bearer token-invalido")
+            .send({
+                name: "Notebook",
+                description: "Notebook de teste",
+                price: 3500,
+                stock: 10
+            });
+
+        expect(response.status).toBe(401);
+
+        expect(response.body).toEqual({
+            error: "Token inválido"
+        });
+
+        expect(createProductService).not.toHaveBeenCalled();
+
+    });
+
+    it("deve retornar erro quando o Service falhar", async () => {
+
+        jwt.verify.mockReturnValue({
+            id: "user-123",
+            role: "admin"
+        });
+
+        createProductService.mockRejectedValue(
+            new Error("Erro ao criar produto")
+        );
+
+        const response = await request(app)
+            .post("/products")
+            .set("Authorization", "Bearer token-falso")
+            .send({
+                name: "Notebook",
+                description: "Notebook de teste",
+                price: 3500,
+                stock: 10
+            });
+
+        expect(response.status).toBe(500);
+
+        expect(createProductService).toHaveBeenCalled();
     });
 });
