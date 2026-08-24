@@ -4,7 +4,7 @@ import jwt from "jsonwebtoken";
 
 import app from "../../src/app.js";
 
-import { getProductsService, createProductService, updateProductService } from "../../src/services/productService.js";
+import { getProductsService, createProductService, updateProductService, deleteProductService } from "../../src/services/productService.js";
 
 vi.mock("../../src/services/productService.js", () => ({
     createProductService: vi.fn(),
@@ -593,6 +593,110 @@ describe("PUT /products/:id", () => {
                 price: 4000,
                 stock: 15
             }
+        );
+    });
+});
+
+// Rota para Deletar Produtos.
+describe("DELETE /products/:id", () => {
+
+    it("deve deletar produto quando o usuário for admin", async () => {
+
+        jwt.verify.mockReturnValue({
+            id: "user-123",
+            role: "admin"
+        });
+
+        deleteProductService.mockResolvedValue();
+
+        const response = await request(app)
+            .delete("/products/product-123")
+            .set("Authorization", "Bearer token-falso");
+
+        expect(response.status).toBe(200);
+
+        expect(response.body).toEqual({
+            message: "Produto deletado com sucesso."
+        });
+
+        expect(deleteProductService).toHaveBeenCalledWith(
+            "product-123"
+        );
+
+    });
+
+    it("deve retornar 401 quando o token não for informado", async () => {
+
+        const response = await request(app)
+            .delete("/products/product-123");
+
+        expect(response.status).toBe(401);
+
+        expect(response.body).toEqual({
+            error: "Token não informado"
+        });
+
+        expect(deleteProductService).not.toHaveBeenCalled();
+    });
+
+    it("deve retornar 403 quando o usuário não for admin", async () => {
+
+        jwt.verify.mockReturnValue({
+            id: "user-123",
+            role: "USER"
+        });
+
+        const response = await request(app)
+            .delete("/products/product-123")
+            .set("Authorization", "Bearer token-falso");
+
+        expect(response.status).toBe(403);
+
+        expect(response.body).toEqual({
+            error: "Acesso negado"
+        });
+
+        expect(deleteProductService).not.toHaveBeenCalled();
+    });
+
+    it("deve retornar 401 quando o token for inválido", async () => {
+
+        jwt.verify.mockImplementation(() => {
+            throw new Error("Token inválido");
+        });
+
+        const response = await request(app)
+            .delete("/products/product-123")
+            .set("Authorization", "Bearer token-invalido");
+
+        expect(response.status).toBe(401);
+
+        expect(response.body).toEqual({
+            error: "Token inválido"
+        });
+
+        expect(deleteProductService).not.toHaveBeenCalled();
+    });
+
+    it("deve retornar 500 quando o Service falhar", async () => {
+
+        jwt.verify.mockReturnValue({
+            id: "user-123",
+            role: "admin"
+        });
+
+        deleteProductService.mockRejectedValue(
+            new Error("Erro ao deletar produto")
+        );
+
+        const response = await request(app)
+            .delete("/products/product-123")
+            .set("Authorization", "Bearer token-falso");
+
+        expect(response.status).toBe(500);
+
+        expect(deleteProductService).toHaveBeenCalledWith(
+            "product-123"
         );
     });
 });
