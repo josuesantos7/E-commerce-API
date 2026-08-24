@@ -4,7 +4,7 @@ import jwt from "jsonwebtoken";
 
 import app from "../../src/app.js";
 
-import { getProductsService, createProductService } from "../../src/services/productService.js";
+import { getProductsService, createProductService, updateProductService } from "../../src/services/productService.js";
 
 vi.mock("../../src/services/productService.js", () => ({
     createProductService: vi.fn(),
@@ -441,5 +441,158 @@ describe("POST /products", () => {
         expect(response.status).toBe(500);
 
         expect(createProductService).toHaveBeenCalled();
+    });
+});
+
+// Rota para Atualizar Produtos.
+describe("PUT /products/:id", () => {
+
+    it("deve atualizar produto quando o usuário for admin", async () => {
+
+        jwt.verify.mockReturnValue({
+            id: "user-123",
+            role: "admin"
+        });
+
+        const product = {
+            id: "product-123",
+            name: "Notebook atualizado",
+            description: "Descrição atualizada",
+            price: 4000,
+            stock: 15
+        };
+
+        updateProductService.mockResolvedValue(product);
+
+        const response = await request(app)
+            .put("/products/product-123")
+            .set("Authorization", "Bearer token-falso")
+            .send({
+                name: "Notebook atualizado",
+                description: "Descrição atualizada",
+                price: 4000,
+                stock: 15
+            });
+
+        expect(response.status).toBe(200);
+
+        expect(response.body).toEqual(product);
+
+        expect(updateProductService).toHaveBeenCalledWith(
+            "product-123",
+            {
+                name: "Notebook atualizado",
+                description: "Descrição atualizada",
+                price: 4000,
+                stock: 15
+            }
+        );
+
+    });
+
+    it("deve retornar 401 quando o token não for informado", async () => {
+
+        const response = await request(app)
+            .put("/products/product-123")
+            .send({
+                name: "Notebook atualizado",
+                description: "Descrição atualizada",
+                price: 4000,
+                stock: 15
+            });
+
+        expect(response.status).toBe(401);
+
+        expect(response.body).toEqual({
+            error: "Token não informado"
+        });
+
+        expect(updateProductService).not.toHaveBeenCalled();
+
+    });
+
+    it("deve retornar 403 quando o usuário não for admin", async () => {
+
+        jwt.verify.mockReturnValue({
+            id: "user-123",
+            role: "USER"
+        });
+
+        const response = await request(app)
+            .put("/products/product-123")
+            .set("Authorization", "Bearer token-falso")
+            .send({
+                name: "Notebook atualizado",
+                description: "Descrição atualizada",
+                price: 4000,
+                stock: 15
+            });
+
+        expect(response.status).toBe(403);
+
+        expect(response.body).toEqual({
+            error: "Acesso negado"
+        });
+
+        expect(updateProductService).not.toHaveBeenCalled();
+    });
+
+    it("deve retornar 401 quando o token for inválido", async () => {
+
+        jwt.verify.mockImplementation(() => {
+            throw new Error("Token inválido");
+        });
+
+        const response = await request(app)
+            .put("/products/product-123")
+            .set("Authorization", "Bearer token-invalido")
+            .send({
+                name: "Notebook atualizado",
+                description: "Descrição atualizada",
+                price: 4000,
+                stock: 15
+            });
+
+        expect(response.status).toBe(401);
+
+        expect(response.body).toEqual({
+            error: "Token inválido"
+        });
+
+        expect(updateProductService).not.toHaveBeenCalled();
+    });
+
+    it("deve retornar 500 quando o Service falhar", async () => {
+
+        jwt.verify.mockReturnValue({
+            id: "user-123",
+            role: "admin"
+        });
+
+        updateProductService.mockRejectedValue(
+            new Error("Erro ao atualizar produto")
+        );
+
+        const response = await request(app)
+            .put("/products/product-123")
+            .set("Authorization", "Bearer token-falso")
+            .send({
+                name: "Notebook atualizado",
+                description: "Descrição atualizada",
+                price: 4000,
+                stock: 15
+            });
+
+        expect(response.status).toBe(500);
+
+        expect(updateProductService).toHaveBeenCalledWith(
+            "product-123",
+            {
+                name: "Notebook atualizado",
+                description: "Descrição atualizada",
+                price: 4000,
+                stock: 15
+            }
+        );
     });
 });
