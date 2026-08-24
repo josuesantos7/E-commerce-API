@@ -1,4 +1,5 @@
 import prisma from "../database/prismaClient.js";
+import { AppError } from "../errors/AppError.js";
 
 export const addToCartService = async (req, res) => {
     const userId = req.userId;
