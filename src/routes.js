@@ -31,23 +31,16 @@ import { getProductsSchema } from "./schemas/getProductsSchema.js";
 const routes = Router();
 
 // Rotas de Usuários
-routes.get("/", (req, res) => {
-  return res.json({ message: "API de comércio rodando 🔥" });
-});
-
-routes.get("/all-usuarios", async (req, res) => {
-  const users = await prisma.user.findMany();
-  return res.json(users);
-});
-
 routes.post("/auth/create-user", validate(registerSchema), register);
 routes.post("/auth/login", validate(loginSchema), login);
+/*
 routes.get("/profile", authMiddleware, (req, res) => {
   return res.json({
     message: "Acesso autorizado!",
     userId: req.userId
   });
 });
+*/
 
 // Rotas de Produtos
 routes.post("/products", authMiddleware,adminMiddleware,validate(createProductSchema), createProduct);
