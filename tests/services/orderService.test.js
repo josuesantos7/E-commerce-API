@@ -17,7 +17,7 @@ vi.mock("../../src/database/prismaClient.js", () => ({
         order: {
             create: vi.fn(),
             findMany: vi.fn(),
-            findUnique: vi.fn(),
+            findFirst: vi.fn(),
             update: vi.fn()
         },
         orderItem: {
@@ -309,17 +309,32 @@ describe("getOrdersService", () => {
 describe("getOrderByIdService", () => {
     it("deve lançar erro quando o pedido não for encontrado", async () => {
 
-        prisma.order.findUnique.mockResolvedValue(null);
+        prisma.order.findFirst.mockResolvedValue(null);
 
         const req = {
             params: {
                 id: "order-inexistente"
-            }
+            },
+            userId: "user-1"
         };
 
         await expect(
             getOrderByIdService(req)
         ).rejects.toThrow("Pedido não encontrado");
+
+        expect(prisma.order.findFirst).toHaveBeenCalledWith({
+            where: {
+                id: "order-inexistente",
+                userId: "user-1"
+            },
+            include: {
+                orderItems: {
+                    include: {
+                        product: true
+                    }
+                }
+            }
+        });
     });
 
     it("deve retornar o pedido pelo ID", async () => {
@@ -343,21 +358,53 @@ describe("getOrderByIdService", () => {
             ]
         };
 
-        prisma.order.findUnique.mockResolvedValue(order);
+        prisma.order.findFirst.mockResolvedValue(order);
 
         const req = {
             params: {
                 id: "order-1"
-            }
+            },
+            userId: "user-1"
         };
 
         const result = await getOrderByIdService(req);
 
         expect(result).toEqual(order);
 
-        expect(prisma.order.findUnique).toHaveBeenCalledWith({
+        expect(prisma.order.findFirst).toHaveBeenCalledWith({
             where: {
+                id: "order-1",
+                userId: "user-1"
+            },
+            include: {
+                orderItems: {
+                    include: {
+                        product: true
+                    }
+                }
+            }
+        });
+    });
+
+    it("deve lançar erro quando o pedido não pertencer ao usuário", async () => {
+
+        prisma.order.findFirst.mockResolvedValue(null);
+
+        const req = {
+            params: {
                 id: "order-1"
+            },
+            userId: "user-999"
+        };
+
+        await expect(
+            getOrderByIdService(req)
+        ).rejects.toThrow("Pedido não encontrado");
+
+        expect(prisma.order.findFirst).toHaveBeenCalledWith({
+            where: {
+                id: "order-1",
+                userId: "user-999"
             },
             include: {
                 orderItems: {

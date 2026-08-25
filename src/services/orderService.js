@@ -87,9 +87,15 @@ export const getOrdersService = async (req, res) => {
 
 export const getOrderByIdService = async (req, res) => {
     const { id } = req.params;
+    const userId = req.userId;
 
-    const order = await prisma.order.findUnique({
-      where: { id },
+    const order = await prisma.order.findFirst({
+      where: 
+        { 
+          id,
+          userId
+        },
+        
       include: {
         orderItems: {
           include: {
