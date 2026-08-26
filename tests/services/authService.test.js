@@ -34,7 +34,7 @@ vi.mock("jsonwebtoken", async () => {
 });
 
 describe("registerService", () => {
-    
+
     beforeEach(() => {
         vi.clearAllMocks();
     });
@@ -55,15 +55,13 @@ describe("registerService", () => {
 
         prisma.user.create.mockResolvedValue(user);
 
-        const req = {
-            body: {
-                name: "João",
-                email: "joao@email.com",
-                password: "123456"
-            }
+        const data = {
+            name: "João",
+            email: "joao@email.com",
+            password: "123456"
         };
 
-        const result = await registerService(req);
+        const result = await registerService(data);
 
         expect(result).toEqual({
             id: "user-1",
@@ -91,16 +89,14 @@ describe("registerService", () => {
             email: "joao@email.com"
         });
 
-        const req = {
-            body: {
-                name: "João",
-                email: "joao@email.com",
-                password: "123456"
-            }
+        const data = {
+            name: "João",
+            email: "joao@email.com",
+            password: "123456"
         };
 
         await expect(
-            registerService(req)
+            registerService(data)
         ).rejects.toThrow("Usuário já existe");
 
         expect(prisma.user.create).not.toHaveBeenCalled();
@@ -126,14 +122,12 @@ describe("loginService", () => {
 
         jwt.sign.mockReturnValue("token-falso-123");
 
-        const req = {
-            body: {
-                email: "josue@email.com",
-                password: "123456"
-            }
+        const data = {
+            email: "josue@email.com",
+            password: "123456"
         };
 
-        const result = await loginService(req);
+        const result = await loginService(data);
 
         expect(result.token).toBe("token-falso-123");
 
@@ -149,15 +143,13 @@ describe("loginService", () => {
 
         prisma.user.findUnique.mockResolvedValue(null);
 
-        const req = {
-            body: {
-                email: "naoexiste@email.com",
-                password: "123456"
-            }
+        const data = {
+            email: "naoexiste@email.com",
+            password: "123456"
         };
 
         await expect(
-            loginService(req)
+            loginService(data)
         ).rejects.toMatchObject({
             message: "Usuário ou senha inválidos",
             statusCode: 401
@@ -179,15 +171,13 @@ describe("loginService", () => {
 
         bcrypt.compare.mockResolvedValue(false);
 
-        const req = {
-            body: {
-                email: "josue@email.com",
-                password: "senha-errada"
-            }
+        const data = {
+            email: "josue@email.com",
+            password: "senha-errada"
         };
 
         await expect(
-            loginService(req)
+            loginService(data)
         ).rejects.toMatchObject({
             message: "Usuário ou senha inválidos",
             statusCode: 401
@@ -211,14 +201,12 @@ describe("loginService", () => {
 
         jwt.sign.mockReturnValue("token-falso-123");
 
-        const req = {
-            body: {
-                email: "josue@email.com",
-                password: "123456"
-            }
+        const data = {
+            email: "joao@email.com",
+            password: "123456"
         };
 
-        const result = await loginService(req);
+        const result = await loginService(data);
 
         expect(result.user).not.toHaveProperty("password");
 
@@ -240,14 +228,12 @@ describe("loginService", () => {
 
         jwt.sign.mockReturnValue("token-falso-123");
 
-        const req = {
-            body: {
-                email: "josue@email.com",
-                password: "123456"
-            }
+        const data = {
+            email: "joao@email.com",
+            password: "123456"
         };
 
-        await loginService(req);
+        await loginService(data);
 
         expect(jwt.sign).toHaveBeenCalledWith(
             {
@@ -259,6 +245,6 @@ describe("loginService", () => {
                 expiresIn: "2h"
             }
         );
-    }); 
+    });
 });
 

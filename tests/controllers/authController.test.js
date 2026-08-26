@@ -39,7 +39,7 @@ describe("authController - register", () => {
 
         await register(req, res, next);
 
-        expect(registerService).toHaveBeenCalledWith(req, res);
+        expect(registerService).toHaveBeenCalledWith(req.body);
 
         expect(res.status).toHaveBeenCalledWith(201);
 
@@ -109,7 +109,7 @@ describe("authController - login", () => {
 
         await login(req, res, next);
 
-        expect(loginService).toHaveBeenCalledWith(req, res);
+        expect(loginService).toHaveBeenCalledWith(req.body);
 
         expect(res.json).toHaveBeenCalledWith(loginResult);
 

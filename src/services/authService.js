@@ -5,8 +5,7 @@ import dotenv from "dotenv";
 import { AppError } from "../errors/AppError.js";
 
 
-export const registerService = async (req, res) => {
-    const { name, email, password } = req.body;
+export const registerService = async ({name, email, password}) => {
 
     const userExists = await prisma.user.findUnique({
       where: { email }
@@ -30,8 +29,7 @@ export const registerService = async (req, res) => {
     return userWithoutPassword;
 };
 
-export const loginService = async (req, res) => {
-    const { email, password } = req.body;
+export const loginService = async ({email, password}) => {
 
     const user = await prisma.user.findUnique({
       where: { email }
