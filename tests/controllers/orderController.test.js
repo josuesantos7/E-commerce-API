@@ -190,7 +190,8 @@ describe("orderController - getOrderById", () => {
         const req = {
             params: {
                 id: "order-inexistente"
-            }
+            },
+            userId: "user-1"
         };
 
         const res = {

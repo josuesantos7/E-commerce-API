@@ -10,8 +10,7 @@ export const createOrder = async (req, res, next) => {
 
     return res.status(201).json({
       order,
-      message: "Pedido criado com sucesso",
-      order
+      message: "Pedido criado com sucesso"
     });
 
   } catch (error) {
