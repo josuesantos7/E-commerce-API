@@ -46,7 +46,7 @@ describe("orderController - createOrder", () => {
 
         await createOrder(req, res, next);
 
-        expect(createOrderService).toHaveBeenCalledWith(req, res);
+        expect(createOrderService).toHaveBeenCalledWith("user-1");
 
         expect(res.status).toHaveBeenCalledWith(201);
 
@@ -115,7 +115,7 @@ describe("orderController - getOrders", () => {
 
         await getOrders(req, res, next);
 
-        expect(getOrdersService).toHaveBeenCalledWith(req, res);
+        expect(getOrdersService).toHaveBeenCalledWith("user-1");
 
         expect(res.json).toHaveBeenCalledWith(orders);
 
@@ -161,7 +161,8 @@ describe("orderController - getOrderById", () => {
         const req = {
             params: {
                 id: "order-1"
-            }
+            },
+            userId: "user-1"
         };
 
         const res = {
@@ -172,7 +173,8 @@ describe("orderController - getOrderById", () => {
 
         await getOrderById(req, res, next);
 
-        expect(getOrderByIdService).toHaveBeenCalledWith(req, res);
+        expect(getOrderByIdService).toHaveBeenCalledWith("order-1",
+            "user-1");
 
         expect(res.json).toHaveBeenCalledWith(order);
 
@@ -235,7 +237,8 @@ describe("orderController - updateOrderStatus", () => {
 
         await updateOrderStatus(req, res, next);
 
-        expect(updateOrderStatusService).toHaveBeenCalledWith(req, res);
+        expect(updateOrderStatusService).toHaveBeenCalledWith("order-1",
+            "PAID");
 
         expect(res.json).toHaveBeenCalledWith(order);
 

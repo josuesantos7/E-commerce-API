@@ -1,9 +1,7 @@
 import prisma from "../database/prismaClient.js";
 import { AppError } from "../errors/AppError.js";
 
-export const createOrderService = async (req, res) => {
-    
-    const userId = req.userId;
+export const createOrderService = async (userId) => {
     
     // buscar itens do carrinho
     const cartItems = await prisma.cartItem.findMany({
@@ -69,8 +67,7 @@ export const createOrderService = async (req, res) => {
   return order;
 };
 
-export const getOrdersService = async (req, res) => {
-    const userId = req.userId;
+export const getOrdersService = async (userId) => {
 
     const orders = await prisma.order.findMany({
       where: { userId },
@@ -85,14 +82,12 @@ export const getOrdersService = async (req, res) => {
     return orders;
 }; 
 
-export const getOrderByIdService = async (req, res) => {
-    const { id } = req.params;
-    const userId = req.userId;
-
+export const getOrderByIdService = async (orderId, userId) => {
+    
     const order = await prisma.order.findFirst({
       where: 
         { 
-          id,
+          id: orderId,
           userId
         },
         
@@ -112,12 +107,10 @@ export const getOrderByIdService = async (req, res) => {
     return order;
 };
 
-export const updateOrderStatusService = async (req, res) => {
-    const { id } = req.params;
-    const { status } = req.body;
+export const updateOrderStatusService = async (id, status) => {
 
     if (!id || !status) {
-      throw new AppError("ID do pedido ou status não encontrados", 404);
+      throw new AppError("ID do pedido ou status não encontrados", 400);
     }
 
     const order = await prisma.order.update({

@@ -35,12 +35,10 @@ describe("createOrderService", () => {
 
         prisma.cartItem.findMany.mockResolvedValue([]);
 
-        const req = {
-            userId: "user-1"
-        };
+        const userId = "user-1";
 
         await expect(
-            createOrderService(req)
+            createOrderService(userId)
         ).rejects.toThrow("Carrinho vazio");
 
     });
@@ -64,12 +62,8 @@ describe("createOrderService", () => {
 
         prisma.cartItem.findMany.mockResolvedValue(cartItems);
 
-        const req = {
-            userId: "user-1"
-        };
-
         await expect(
-            createOrderService(req)
+            createOrderService("user-1")
         ).rejects.toThrow(
             "Estoque insuficiente para Produto Teste"
         );
@@ -131,11 +125,9 @@ describe("createOrderService", () => {
             return callback(tx);
         });
 
-        const req = {
-            userId: "user-1"
-        };
+        const userId = "user-1";
 
-        const result = await createOrderService(req);
+        const result = await createOrderService(userId);
 
         expect(result).toEqual(createdOrder);
 
@@ -213,11 +205,9 @@ describe("createOrderService", () => {
             return callback(tx);
         });
 
-        const req = {
-            userId: "user-1"
-        };
+        const userId = "user-1";
 
-        await createOrderService(req);
+        await createOrderService(userId);
 
         expect(tx.orderItem.create).toHaveBeenNthCalledWith(1, {
             data: {
@@ -283,11 +273,9 @@ describe("getOrdersService", () => {
 
         prisma.order.findMany.mockResolvedValue(orders);
 
-        const req = {
-            userId: "user-1"
-        };
+        const userId = "user-1";
 
-        const result = await getOrdersService(req);
+        const result = await getOrdersService(userId);
 
         expect(result).toEqual(orders);
 
@@ -311,15 +299,11 @@ describe("getOrderByIdService", () => {
 
         prisma.order.findFirst.mockResolvedValue(null);
 
-        const req = {
-            params: {
-                id: "order-inexistente"
-            },
-            userId: "user-1"
-        };
+        const orderId = "order-inexistente";
+        const userId = "user-1";
 
         await expect(
-            getOrderByIdService(req)
+            getOrderByIdService(orderId, userId)
         ).rejects.toThrow("Pedido não encontrado");
 
         expect(prisma.order.findFirst).toHaveBeenCalledWith({
@@ -360,14 +344,10 @@ describe("getOrderByIdService", () => {
 
         prisma.order.findFirst.mockResolvedValue(order);
 
-        const req = {
-            params: {
-                id: "order-1"
-            },
-            userId: "user-1"
-        };
+        const orderId = "order-1";
+        const userId = "user-1";
 
-        const result = await getOrderByIdService(req);
+        const result = await getOrderByIdService(orderId, userId);
 
         expect(result).toEqual(order);
 
@@ -390,15 +370,11 @@ describe("getOrderByIdService", () => {
 
         prisma.order.findFirst.mockResolvedValue(null);
 
-        const req = {
-            params: {
-                id: "order-1"
-            },
-            userId: "user-999"
-        };
+        const orderId = "order-1";
+        const userId = "user-999";
 
         await expect(
-            getOrderByIdService(req)
+            getOrderByIdService(orderId, userId)
         ).rejects.toThrow("Pedido não encontrado");
 
         expect(prisma.order.findFirst).toHaveBeenCalledWith({
@@ -433,16 +409,8 @@ describe("updateOrderStatusService", () => {
 
         prisma.order.update.mockResolvedValue(updatedOrder);
 
-        const req = {
-            params: {
-                id: "order-1"
-            },
-            body: {
-                status: "SHIPPED"
-            }
-        };
-
-        const result = await updateOrderStatusService(req);
+        const result = await updateOrderStatusService("order-1",
+            "SHIPPED");
 
         expect(result).toEqual(updatedOrder);
 
@@ -458,31 +426,16 @@ describe("updateOrderStatusService", () => {
 
     it("deve lançar erro quando o ID do pedido não for informado", async () => {
 
-        const req = {
-            params: {},
-            body: {
-                status: "SHIPPED"
-            }
-        };
-
         await expect(
-            updateOrderStatusService(req)
+            updateOrderStatusService(undefined, "SHIPPED")
         ).rejects.toThrow("ID do pedido ou status não encontrados");
 
         expect(prisma.order.update).not.toHaveBeenCalled();
     });
 
     it("deve lançar erro quando o status não for informado", async () => {
-
-        const req = {
-            params: {
-                id: "order-1"
-            },
-            body: {}
-        };
-
         await expect(
-            updateOrderStatusService(req)
+            updateOrderStatusService("order-1", undefined)
         ).rejects.toThrow("ID do pedido ou status não encontrados");
 
         expect(prisma.order.update).not.toHaveBeenCalled();

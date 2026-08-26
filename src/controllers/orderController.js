@@ -3,10 +3,13 @@ import { createOrderService, getOrdersService, getOrderByIdService, updateOrderS
 
 export const createOrder = async (req, res, next) => {
   try {
+
+    const userId = req.userId;
     
-    const order = await createOrderService(req, res);
+    const order = await createOrderService(userId);
 
     return res.status(201).json({
+      order,
       message: "Pedido criado com sucesso",
       order
     });
@@ -20,7 +23,7 @@ export const getOrders = async (req, res, next) => {
   try {
     const userId = req.userId;
 
-    const orders = await getOrdersService(req, res);
+    const orders = await getOrdersService(userId);
 
     return res.json(orders);
   } catch (error) {
@@ -30,9 +33,11 @@ export const getOrders = async (req, res, next) => {
 
 export const getOrderById = async (req, res, next) => {
   try {
-    const { id } = req.params;
 
-    const order = await getOrderByIdService(req, res);
+    const { id } = req.params;
+    const userId = req.userId;
+    
+    const order = await getOrderByIdService(id, userId);
 
     return res.json(order);
   } catch (error) {
@@ -43,7 +48,10 @@ export const getOrderById = async (req, res, next) => {
 export const updateOrderStatus = async (req, res, next) => {
   try {
 
-    const order = await updateOrderStatusService(req, res);
+    const { id } = req.params;
+    const { status } = req.body;
+
+    const order = await updateOrderStatusService(id, status);
 
     return res.json(order);
   } catch (error) {
